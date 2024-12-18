@@ -1,35 +1,31 @@
 const express = require('express');
-const http = require('http');
-const socketIO = require('socket.io');
+const serverless = require('serverless-http');
 
+// Inisialisasi Express
 const app = express();
-const server = http.createServer(app);
-const io = socketIO(server);
+app.use(express.json()); // Untuk parsing JSON di request body
 
-app.use(express.static('public')); // Serve static files
+// Tempat penyimpanan informasi sementara (bisa diganti dengan database)
+let infoData = [];
 
-let currentInfo = 'Tidak ada informasi terbaru saat ini.';
-
-// Ketika koneksi socket baru terhubung
-io.on('connection', (socket) => {
-    console.log('User connected');
-
-    // Kirim informasi terbaru ke client baru yang terhubung
-    socket.emit('updateInfo', currentInfo);
-
-    // Menerima informasi dari admin
-    socket.on('newInfo', (data) => {
-        currentInfo = data;
-        io.emit('updateInfo', currentInfo); // Kirim ke semua client
-    });
-
-    // Ketika user terputus
-    socket.on('disconnect', () => {
-        console.log('User disconnected');
-    });
+// Endpoint untuk mengambil informasi terbaru
+app.get('/api/get-info', (req, res) => {
+  res.status(200).json(infoData);
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`Server berjalan di port ${PORT}`);
+// Endpoint untuk meng-upload informasi
+app.post('/api/upload-info', (req, res) => {
+  const { infoText } = req.body; // Ambil informasi dari body request
+
+  if (!infoText) {
+    return res.status(400).json({ message: 'Informasi tidak boleh kosong!' });
+  }
+
+  // Simpan informasi ke array (bisa diganti dengan database)
+  infoData.push(infoText);
+
+  return res.status(200).json({ message: 'Informasi berhasil diperbarui!', data: infoData });
 });
+
+// Gunakan serverless-http untuk mendukung Vercel
+module.exports.handler = serverless(app);
