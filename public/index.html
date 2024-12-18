@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Informasi</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Informasi Terbaru</h1>
+        </header>
+        
+        <section id="info-section">
+            <p id="info-content">Tidak ada informasi terbaru saat ini.</p>
+        </section>
+        
+        <footer>
+            <p>Halaman ini otomatis memperbarui informasi secara real-time.</p>
+        </footer>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        // Menerima pembaruan informasi dari server
+        socket.on('updateInfo', (data) => {
+            document.getElementById('info-content').textContent = data;
+        });
+    </script>
+</body>
+</html>
